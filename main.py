@@ -1,11 +1,8 @@
 import sys
 import os
 import requests
-import shutil
 from pytube import YouTube, exceptions
-from pytube.cli import on_progress
 from PyQt5 import QtWidgets, uic, QtGui, QtCore
-from PyQt5.QtGui import QPixmap, QIcon
 from PyQt5.QtWidgets import QFileDialog
 from threading import Thread
 
@@ -15,13 +12,9 @@ class Ui(QtWidgets.QMainWindow):
         super(Ui, self).__init__()
         uic.loadUi('main.ui', self)
         
-        self.download_button.clicked.connect(self.multi)
+        self.download_button.clicked.connect(self.get_video)
         self.url_input.textChanged.connect(self.video_info)
         self.show()
-
-    def multi(self):
-        thread = Thread(target=self.get_video)
-        thread.start()
     
     def get_video(self):
         url = self.url_input.text()
@@ -30,7 +23,7 @@ class Ui(QtWidgets.QMainWindow):
 
         try:
             video_input = YouTube(url)
-            video_input.register_on_progress_callback(self.on_progress)
+            
             if mp3.isChecked():
                 mp4.setChecked(False)
                 output = str(QFileDialog.getExistingDirectory(self, "Selecione uma pasta"))
@@ -74,21 +67,7 @@ class Ui(QtWidgets.QMainWindow):
         os.remove('https.png')
         event.accept()
         
-    def on_progress(self, vid, chunk, bytes_remaining):
-        total_size = vid.filesize
-        bytes_downloaded = total_size - bytes_remaining
-        percentage_of_completion = bytes_downloaded / total_size * 100
-        totalsz = (total_size/1024)/1024
-        totalsz = round(totalsz,1)
-        remain = (bytes_remaining / 1024) / 1024
-        remain = round(remain, 1)
-        dwnd = (bytes_downloaded / 1024) / 1024
-        dwnd = round(dwnd, 1)
-        percentage_of_completion = round(percentage_of_completion,2)
-
-        #print(f'Total Size: {totalsz} MB')
-        print(f'Download Progress: {percentage_of_completion}%, Total Size:{totalsz} MB, Downloaded: {dwnd} MB, Remaining:{remain} MB')
-        self.bar.setText(str(percentage_of_completion))
+    
 
 app = QtWidgets.QApplication(sys.argv)
 window = Ui()
